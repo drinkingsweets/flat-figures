@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
-from math import sqrt
+from math import sqrt, atan2, degrees
 from icecream import ic
 import numpy as np
 import random
@@ -353,11 +353,35 @@ def flt_angle_point(coords, angle):
     return False
 
 
-def flt_polygon_angles_inside(coords, angle):
-    is_convex = flt_convex_polygon(coords)
-    is_angle = flt_angle_point(coords, angle)
+def flt_polygon_angles_inside(coords, angles):
+    angs = []
 
-    return is_convex and is_angle
+    def find_angle(side1, side2, side3):
+        prev = side1
+        cur = side2
+        next = side3
+
+        vec1 = (prev[0] - cur[0], prev[1] - cur[1])
+        vec2 = (next[0] - cur[0], next[1] - cur[1])
+
+        radians = atan2(vec2[1], vec2[0]) - atan2(vec1[1], vec1[0])
+
+        return degrees(radians)
+
+    for i in range(len(angles)):
+        res_cur = find_angle(angles[i - 1], angles[i], angles[(i + 1) % len(angles)])
+        angs.append(res_cur if res_cur > 0 else res_cur + 360)
+
+    for i in range(len(coords)):
+
+        angle_cur = find_angle(coords[i - 1], coords[i], coords[(i + 1) % len(coords)])
+        angle_cur = angle_cur if angle_cur > 0 else angle_cur + 360
+
+        if angle_cur in angs:
+            return True
+
+    return False
+
 
 
 def flt_point_inside(coords, point):
@@ -509,7 +533,7 @@ test6 = (((-10, 0), (-10, 10), (-6, 8), (-4, 10), (-4, 0)),
 # visualize(list(filter(lambda p: flt_square(p, 15), test3)))
 # visualize(list(filter(lambda p: flt_short_side(p, 10), test4)))
 # visualize(list(filter(lambda p: flt_angle_point(p, (1, 0)), test5)))
-# visualize(list(filter(lambda p: flt_polygon_angles_inside(p, (-4, 0)), test6)))
+# visualize(list(filter(lambda p: flt_polygon_angles_inside(p, ((0, 0), (0, 2), (2, 2))), test6)))
 # visualize(list(filter(lambda p: flt_point_inside(p, (3, 1)), test6)))
 
 
@@ -536,4 +560,5 @@ test6 = (((-10, 0), (-10, 10), (-6, 8), (-4, 10), (-4, 0)),
 # ic(agr_perimeter(0, ((0, 0), (0, 3), (10, 3), (10, 0))))
 # ic(reduce(agr_perimeter, test6, 0))
 
-ic(reduce(agr_area, test6, 0))
+# ic(reduce(agr_area, test6, 0))
+
