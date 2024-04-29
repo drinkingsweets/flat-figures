@@ -4,6 +4,7 @@ from math import sqrt
 from icecream import ic
 import numpy as np
 import random
+from functools import reduce
 
 limiter_x = 70
 limiter_y = 40
@@ -403,6 +404,52 @@ def filter_4():
     visualize(random_15)
     visualize(tuple(filter(lambda p: flt_short_side(p, 5), random_15)))
 
+def agr_origin_nearest(coords1, coords2):
+    difs_1 = {pair: sqrt(pair[0] ** 2 + pair[1] ** 2) for pair in coords1}
+    difs_2 = {pair: sqrt(pair[0] ** 2 + pair[1] ** 2) for pair in coords2}
+    difs = {**difs_1, **difs_2}
+    return tuple([min(difs, key=difs.get)])
+
+
+
+def agr_max_side(side, coords2):
+
+    for i in range(len(coords2)):
+        x, y = coords2[i]
+        x1, y1 = coords2[(i + 1) % len(coords2)]
+        cur = sqrt((x - x1) ** 2 + (y - y1) ** 2)
+        side = cur
+
+    return side
+
+def find_area(coords):
+    square = 0.0
+    n = len(coords)
+
+    for i in range(n):
+        x1, y1 = coords[i]
+        x2, y2 = coords[(i + 1) % n]
+        trapez = 0.5 * (x2 - x1) * (y1 + y2)
+
+        square += trapez
+
+    return square
+def agr_min_area(area, coords):
+    square = find_area(coords)
+
+    return min(area, square)
+
+def agr_perimeter(per, coords):
+
+    for i in range(len(coords)):
+        x1, y1 = coords[i]
+        x2, y2 = coords[(i + 1) % len(coords)]
+        per += sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    return per
+
+def agr_area(area, coords):
+    return area + find_area(coords)
 
 # 2nd part -------------------------------
 # visualize(gen_triangle(a = 5))
@@ -447,8 +494,12 @@ test5 = (((1, 0), (1, 10), (3, 15), (3, 0)), ((-10, 0), (-10, 10), (-3, 6), (1, 
          ((10, 0), (12, 6), (0, 0)), ((-10, 0), (-10, 10), (-6, 8), (-4, 10), (-4, 0)),
          ((0, 0), (0, 20), (20, 20), (20, 0)))
 
-test6 = (((-10, 0), (-10, 10), (-6, 8), (-4, 10), (-4, 0)), ((-4, 0), (-4, 6), (10, 6), (10, 0)),
-         ((10, 0), (12, 6), (0, 0)), ((-45, 0), (-45, 15), (-30, 15), (-30, 0)))
+test6 = (((-10, 0), (-10, 10), (-6, 8), (-4, 10), (-4, 0)),
+         ((-4, 0), (-4, 6), (10, 6), (10, 0)),
+         ((10, 0), (12, 6), (0, 1)),
+         ((-45, 0), (-45, 15), (-30, 15), (-30, 0)))
+
+
 # visualize(test3)
 # visualize(test4)
 # visualize(test5)
@@ -472,3 +523,17 @@ test6 = (((-10, 0), (-10, 10), (-6, 8), (-4, 10), (-4, 0)), ((-4, 0), (-4, 6), (
 # visualize(random_figures())
 
 # 8th part ------------------------------- 2 extra, sum = 5
+# ic(agr_origin_nearest(((1, 2), (0, 1), (3, 2)), ((1, 2), (3, 4))))
+# res = reduce(lambda p, p2: agr_origin_nearest(p, p2), test6)
+# ic(res)
+
+# ic(agr_max_side(0, ((4, 4), (5, 2), (0, 0))))
+# ic(reduce(lambda acc, p: agr_max_side(0, p), test6))
+
+# ic(agr_min_area(10**9, ((0, 0), (0, 2), (5, 2), (5, 0))))
+# ic(reduce(lambda acc, p: agr_min_area(10**10, p), test6))
+
+# ic(agr_perimeter(0, ((0, 0), (0, 3), (10, 3), (10, 0))))
+# ic(reduce(agr_perimeter, test6, 0))
+
+ic(reduce(agr_area, test6, 0))
